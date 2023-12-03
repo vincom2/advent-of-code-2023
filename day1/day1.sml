@@ -20,50 +20,39 @@ fun digits_of_line line = let
   val attempts_backwards = List.map (fn (n, c) => (n, Substring.position c ss_backwards)) conv_backwards
   val attempts' = List.map successful_attempt attempts
   val attempts_backwards' = List.map successful_attempt attempts_backwards
-  val attempts'' = List.foldl (fn (attempt, acc) => case acc of
-      NONE => attempt
-    | SOME (al, _) => (case attempt of
-        NONE => acc
-      | SOME (l, _) => if l < al then attempt else acc)) NONE attempts'
-  val attempts_backwards'' = List.foldl (fn (attempt, acc) => case acc of
-      NONE => attempt
-    | SOME (al, _) => (case attempt of
-        NONE => acc
-      | SOME (l, _) => if l < al then attempt else acc)) NONE attempts_backwards'
+  fun f (attempt, acc) = case acc of
+    NONE => attempt
+  | SOME (al, _) => (case attempt of
+      NONE => acc
+    | SOME (l, _) => if l < al then attempt else acc)
+  val attempts'' = List.foldl f NONE attempts'
+  val attempts_backwards'' = List.foldl f NONE attempts_backwards'
   val chars = String.explode line
   val digits = List.filter Char.isDigit chars
 in
   case (attempts'', attempts_backwards'') of
-    (NONE, NONE) => (case List.length digits of
-      0 => raise Fail "wtf"
-    | 1 => let
-      val digit :: _ = digits
+    (NONE, NONE) => (case digits of
+      [] => raise Fail "wtf"
+    | [digit] => let
       val digit' = c2d digit
     in (digit', digit') end
-    | _ => let
-      val first :: _ = digits
+    | first :: _ => let
       val first' = c2d first
       val last :: _ = List.rev digits
       val last' = c2d last
     in (first', last') end)
-  | (NONE, _) => let val (SOME (_, last)) = attempts_backwards'' in case List.length digits of
-      0 => (last, last)
-    | _ => let
-      val digit :: _ = digits
+  | (NONE, SOME (_, last)) => (case digits of
+      [] => (last, last)
+    | digit :: _ => let
       val digit' = c2d digit
-    in (digit', last) end
-  end
-  | (_, NONE) => let val (SOME (_, first)) = attempts'' in case List.length digits of
-      0 => (first, first)
+    in (digit', last) end)
+  | (SOME (_, first), NONE) => (case digits of
+      [] => (first, first)
     | _ => let
       val digit :: _ = List.rev digits
       val digit' = c2d digit
-    in (first, digit') end
-  end
-  | (_, _) => let
-    val (SOME (_, first)) = attempts''
-    val (SOME (_, last)) = attempts_backwards''
-  in (first, last) end
+    in (first, digit') end)
+  | (SOME (_, first), SOME (_, last)) => (first, last)
 end
 
 fun process filename = let
