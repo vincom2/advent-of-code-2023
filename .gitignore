@@ -1,0 +1,5 @@
+.DS_Store
+input.txt
+*.py
+__pycache__
+*.pdf
