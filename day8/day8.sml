@@ -94,13 +94,11 @@ end
  * then calculate the LCM *)
 
 local
-  (* open IntInf *)
-  datatype steps3 = Done3 of int | NotYet3 of int * string
   fun are_we_done node = String.sub (node, 2) = #"Z"
 in
-  fun real_follow2 _ node [] steps = NotYet3 (steps, node)
+  fun real_follow2 _ node [] steps = NotYet (steps, node)
     | real_follow2 node_map node (instruction :: instructions) steps =
-        if are_we_done node then Done3 steps else let
+        if are_we_done node then Done steps else let
           val (left, right) = M.lookup (node_map, node)
           val next = (case instruction of
             #"L" => left
@@ -111,9 +109,14 @@ in
 
   fun real_follow_until_done2 node_map node instructions steps =
     case real_follow2 node_map node instructions steps of
-      Done3 steps => steps
-    | NotYet3 (steps', node') =>real_follow_until_done2 node_map node' instructions steps'
-
+      Done steps => steps
+    | NotYet (steps', node') =>real_follow_until_done2 node_map node' instructions steps'
+  
+  fun gcd (a, 0) = a
+    | gcd (a, b) = gcd (b, a mod b)
+  
+  fun lcm (a, b) = (a * b) div (gcd (a, b))
+  
   fun real_process2 filename = let
     val input = read_file filename
     val instructions :: nodes = String.tokens (fn c => c = #"\n") input
@@ -136,7 +139,6 @@ in
     val instructions' = String.explode instructions
     val steps = List.map (fn node => real_follow_until_done2 node_map node instructions' 0) starting_nodes
   in
-    (* List.foldl op* 1 steps *)
-    steps
+    List.foldl lcm 1 steps
   end
 end
