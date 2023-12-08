@@ -1,0 +1,7 @@
+$(SML_LIB)/basis/basis.mlb
+$(SML_LIB)/smlnj-lib/Util/smlnj-lib.mlb
+
+ann "nonexhaustiveBind ignore" in
+  day8.sml
+  main.sml
+end
